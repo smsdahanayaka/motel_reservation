@@ -1,4 +1,4 @@
-# motel_reservation
+# my_app
 
 A new Flutter project.
 
