@@ -1,16 +1,21 @@
-// lib/screens/user/booking_screen.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:my_app/models/booking.dart';
 import 'package:my_app/services/database_service.dart';
 import 'package:my_app/widgets/date_selector.dart';
 import 'package:my_app/widgets/price_summary.dart';
-import 'package:my_app/widgets/date_selector.dart';
-import 'package:my_app/widgets/price_summary.dart';
 
 class BookingScreen extends StatefulWidget {
   final String roomType;
-  const BookingScreen({super.key, required this.roomType});
+  final DateTime? initialCheckIn;
+  final DateTime? initialCheckOut;
+
+  const BookingScreen({
+    super.key,
+    required this.roomType,
+    this.initialCheckIn,
+    this.initialCheckOut,
+  });
 
   @override
   State<BookingScreen> createState() => _BookingScreenState();
@@ -24,6 +29,13 @@ class _BookingScreenState extends State<BookingScreen> {
     'Standard Room': [17.0, 30.0, 45.0, 100.0],
     'Penthouse Suite': [65.0, 100.0, 135.0, 220.0, 750.0],
   };
+
+  @override
+  void initState() {
+    super.initState();
+    _checkInDate = widget.initialCheckIn;
+    _checkOutDate = widget.initialCheckOut;
+  }
 
   double get _totalPrice {
     if (_checkInDate == null || _checkOutDate == null) return 0.0;
@@ -46,7 +58,9 @@ class _BookingScreenState extends State<BookingScreen> {
   Future<void> _submitBooking() async {
     if (_checkInDate == null || _checkOutDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select check-in and check-out dates')),
+        const SnackBar(
+          content: Text('Please select check-in and check-out dates'),
+        ),
       );
       return;
     }
@@ -62,16 +76,16 @@ class _BookingScreenState extends State<BookingScreen> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Booking successful!')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Booking successful!')));
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${e.toString()}')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -81,9 +95,7 @@ class _BookingScreenState extends State<BookingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Book ${widget.roomType}'),
-      ),
+      appBar: AppBar(title: Text('Book ${widget.roomType}')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -119,7 +131,10 @@ class _BookingScreenState extends State<BookingScreen> {
               onDateSelected: (date) {
                 setState(() {
                   _checkInDate = date;
-                  if (_checkOutDate != null && _checkOutDate!.isBefore(date.add(const Duration(days: 1)))) {
+                  if (_checkOutDate != null &&
+                      _checkOutDate!.isBefore(
+                        date.add(const Duration(days: 1)),
+                      )) {
                     _checkOutDate = null;
                   }
                 });
@@ -146,9 +161,19 @@ class _BookingScreenState extends State<BookingScreen> {
               height: 50,
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _submitBooking,
-                child: _isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('Confirm Booking'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child:
+                    _isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text(
+                          'Confirm Booking',
+                          style: TextStyle(fontSize: 16),
+                        ),
               ),
             ),
           ],
@@ -159,7 +184,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
   Widget _buildPriceTable() {
     final isPenthouse = widget.roomType == 'Penthouse Suite';
-    final lkrRate = 300; // Example conversion rate (adjust as needed)
+    final lkrRate = 300; // Example conversion rate
 
     return Table(
       border: TableBorder.symmetric(
@@ -173,7 +198,10 @@ class _BookingScreenState extends State<BookingScreen> {
           children: [
             Padding(
               padding: EdgeInsets.symmetric(vertical: 8),
-              child: Text('Duration', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(
+                'Duration',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
             Padding(
               padding: EdgeInsets.symmetric(vertical: 8),
@@ -197,7 +225,9 @@ class _BookingScreenState extends State<BookingScreen> {
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Text('${(_pricing[widget.roomType]![0] * lkrRate).toStringAsFixed(0)} LKR'),
+              child: Text(
+                '${(_pricing[widget.roomType]![0] * lkrRate).toStringAsFixed(0)} LKR',
+              ),
             ),
           ],
         ),
@@ -213,7 +243,9 @@ class _BookingScreenState extends State<BookingScreen> {
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Text('${(_pricing[widget.roomType]![1] * lkrRate).toStringAsFixed(0)} LKR'),
+              child: Text(
+                '${(_pricing[widget.roomType]![1] * lkrRate).toStringAsFixed(0)} LKR',
+              ),
             ),
           ],
         ),
@@ -229,7 +261,9 @@ class _BookingScreenState extends State<BookingScreen> {
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Text('${(_pricing[widget.roomType]![2] * lkrRate).toStringAsFixed(0)} LKR'),
+              child: Text(
+                '${(_pricing[widget.roomType]![2] * lkrRate).toStringAsFixed(0)} LKR',
+              ),
             ),
           ],
         ),
@@ -245,7 +279,9 @@ class _BookingScreenState extends State<BookingScreen> {
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Text('${(_pricing[widget.roomType]![3] * lkrRate).toStringAsFixed(0)} LKR'),
+              child: Text(
+                '${(_pricing[widget.roomType]![3] * lkrRate).toStringAsFixed(0)} LKR',
+              ),
             ),
           ],
         ),
@@ -262,7 +298,9 @@ class _BookingScreenState extends State<BookingScreen> {
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Text('${(_pricing[widget.roomType]![4] * lkrRate).toStringAsFixed(0)} LKR'),
+                child: Text(
+                  '${(_pricing[widget.roomType]![4] * lkrRate).toStringAsFixed(0)} LKR',
+                ),
               ),
             ],
           ),

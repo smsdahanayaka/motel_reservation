@@ -10,7 +10,8 @@ class DatabaseService {
 
   // Collection references
   CollectionReference get _usersCollection => _firestore.collection('users');
-  CollectionReference get _bookingsCollection => _firestore.collection('bookings');
+  CollectionReference get _bookingsCollection =>
+      _firestore.collection('bookings');
 
   // User Operations
   Future<void> createUserData({
@@ -59,27 +60,28 @@ class DatabaseService {
   }
 
   Future<List<Booking>> getUserBookings(String userId) async {
-    final query = await _bookingsCollection
-        .where('userId', isEqualTo: userId)
-        .orderBy('createdAt', descending: true)
-        .get();
+    final query =
+        await _bookingsCollection
+            .where('userId', isEqualTo: userId)
+            .orderBy('createdAt', descending: true)
+            .get();
 
     return query.docs.map((doc) => Booking.fromFirestore(doc)).toList();
   }
 
   Future<List<Booking>> getAllBookings() async {
-    final query = await _bookingsCollection
-        .orderBy('createdAt', descending: true)
-        .get();
+    final query =
+        await _bookingsCollection.orderBy('createdAt', descending: true).get();
 
     return query.docs.map((doc) => Booking.fromFirestore(doc)).toList();
   }
 
   Future<List<Booking>> getBookingsByStatus(String status) async {
-    final query = await _bookingsCollection
-        .where('status', isEqualTo: status)
-        .orderBy('createdAt', descending: true)
-        .get();
+    final query =
+        await _bookingsCollection
+            .where('status', isEqualTo: status)
+            .orderBy('createdAt', descending: true)
+            .get();
 
     return query.docs.map((doc) => Booking.fromFirestore(doc)).toList();
   }
@@ -101,14 +103,16 @@ class DatabaseService {
     required DateTime checkIn,
     required DateTime checkOut,
   }) async {
-    final overlappingBookings = await _bookingsCollection
-        .where('roomType', isEqualTo: roomType)
-        .where('status', whereIn: ['Pending', 'Approved'])
-        .get();
+    final overlappingBookings =
+        await _bookingsCollection
+            .where('roomType', isEqualTo: roomType)
+            .where('status', whereIn: ['Pending', 'Approved'])
+            .get();
 
     for (final doc in overlappingBookings.docs) {
       final booking = Booking.fromFirestore(doc);
-      if (checkIn.isBefore(booking.checkOut) && checkOut.isAfter(booking.checkIn)) {
+      if (checkIn.isBefore(booking.checkOut) &&
+          checkOut.isAfter(booking.checkIn)) {
         return false; // Room is not available
       }
     }
@@ -121,15 +125,34 @@ class DatabaseService {
         .where('userId', isEqualTo: userId)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => Booking.fromFirestore(doc)).toList());
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((doc) => Booking.fromFirestore(doc)).toList(),
+        );
   }
 
   Stream<List<Booking>> streamAllBookings() {
     return _bookingsCollection
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => Booking.fromFirestore(doc)).toList());
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((doc) => Booking.fromFirestore(doc)).toList(),
+        );
+  }
+
+  // Add this to your DatabaseService class
+  // Add this to your DatabaseService class
+  Future<List<Booking>> getBookingsForRoom(String roomType) async {
+    final query =
+        await _bookingsCollection
+            .where('roomType', isEqualTo: roomType)
+            .where(
+              'status',
+              whereIn: ['Pending', 'Approved'],
+            ) // Only active bookings
+            .get();
+
+    return query.docs.map((doc) => Booking.fromFirestore(doc)).toList();
   }
 }

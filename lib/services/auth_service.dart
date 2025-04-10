@@ -1,16 +1,32 @@
-// lib/services/auth_service.dart
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore =
+      FirebaseFirestore.instance; // Add this line
 
-  Future<User?> login({required String email, required String password}) async {
+  Future<Map<String, dynamic>> login({
+    required String email,
+    required String password,
+  }) async {
     try {
       final credential = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
-      return credential.user;
+      final uid = credential.user!.uid;
+
+      // Get user role from Firestore
+      final userDoc =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      final userData = userDoc.data();
+
+      if (userData == null) {
+        throw 'User data not found.';
+      }
+
+      return {'user': credential.user, 'role': userData['role']};
     } on FirebaseAuthException catch (e) {
       throw _handleAuthError(e);
     }
@@ -22,13 +38,31 @@ class AuthService {
     required String name,
   }) async {
     try {
+      // Register user with Firebase Authentication
       final credential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
-      await credential.user!.updateDisplayName(name);
-      await credential.user!.sendEmailVerification();
-      return credential.user;
+
+      // Get the Firebase user instance
+      final user = credential.user;
+
+      if (user != null) {
+        // Create a Firestore document for the user
+        await _firestore.collection('users').doc(user.uid).set({
+          'name': name,
+          'email': email,
+          'isAdmin':
+              false, // Set this flag based on your requirement (default: false)
+          'createdAt': Timestamp.now(),
+        });
+
+        // Send email verification
+        await user.sendEmailVerification();
+
+        return user;
+      }
+      return null;
     } on FirebaseAuthException catch (e) {
       throw _handleAuthError(e);
     }

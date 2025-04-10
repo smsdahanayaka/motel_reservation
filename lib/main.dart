@@ -8,6 +8,7 @@ import 'package:my_app/screens/auth/email_verification_screen.dart';
 import 'package:my_app/screens/auth/login_screen.dart';
 import 'package:my_app/screens/user/home_screen.dart';
 import 'firebase_options.dart';
+import 'package:my_app/screens/home/landing_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,7 +23,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Motel Reservation',
-      debugShowCheckedModeBanner: false,
+      debugShowCheckedModeBanner: true,
       theme: ThemeData(
         primarySwatch: Colors.blue,
         fontFamily: 'Poppins',
@@ -39,6 +40,12 @@ class MyApp extends StatelessWidget {
         ),
       ),
       home: const AuthWrapper(),
+      routes: {
+        '/login': (context) => const LoginScreen(),
+        '/adminDashboard': (context) => const AdminHome(),
+        '/userDashboard': (context) => const UserHomeScreen(),
+        '/home': (context) => const LandingPage(),
+      },
     );
   }
 }
@@ -55,7 +62,7 @@ class AuthWrapper extends StatelessWidget {
           final user = snapshot.data;
 
           if (user == null) {
-            return const LoginScreen();
+            return const LandingPage(); // Changed from LoginScreen to LandingPage
           }
 
           if (!user.emailVerified) {
@@ -87,7 +94,8 @@ class AuthWrapper extends StatelessWidget {
                 if (userData['isAdmin'] == true) {
                   return const AdminHome();
                 }
-                return const UserHomeScreen();
+                // return const UserHomeScreen();
+                return const LandingPage();
               }
 
               return const Scaffold(
