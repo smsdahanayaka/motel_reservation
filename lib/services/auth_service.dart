@@ -6,6 +6,9 @@ class AuthService {
   final FirebaseFirestore _firestore =
       FirebaseFirestore.instance; // Add this line
 
+  // Add this to your AuthService class
+  Stream<User?> get authStateChanges => _auth.authStateChanges();
+  
   Future<Map<String, dynamic>> login({
     required String email,
     required String password,

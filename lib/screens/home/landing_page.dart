@@ -1,9 +1,14 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:my_app/screens/auth/login_screen.dart';
+import 'package:my_app/screens/auth/register_screen.dart';
 import 'package:my_app/screens/user/booking_screen.dart';
+import 'package:my_app/screens/user/profile_screen.dart';
+import 'package:my_app/services/auth_service.dart';
 import 'package:my_app/widgets/availability_calendar.dart';
-import 'package:flutter/gestures.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LandingPage extends StatefulWidget {
@@ -38,72 +43,196 @@ class _LandingPageState extends State<LandingPage> {
   }
 
   Widget _buildNavBar(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 2,
-            blurRadius: 10,
-            offset: const Offset(0, 3),
+    // return Container(
+    //   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+    //   decoration: BoxDecoration(
+    //     color: Colors.white,
+    //     boxShadow: [
+    //       BoxShadow(
+    //         color: Colors.grey.withOpacity(0.1),
+    //         spreadRadius: 2,
+    //         blurRadius: 10,
+    //         offset: const Offset(0, 3),
+    //       ),
+    //     ],
+    //   ),
+    //   child: Row(
+    //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    //     children: [
+    //       const Text(
+    //         'MotelReserve',
+    //         style: TextStyle(
+    //           fontSize: 24,
+    //           fontWeight: FontWeight.bold,
+    //           color: Colors.blue,
+    //         ),
+    //       ),
+    //       Row(
+    //         children: [
+    //           _navItem('Home', context),
+    //           _navItem('Rooms', context),
+    //           _navItem('About', context),
+    //           _navItem('Contact', context),
+    //         ],
+    //       ),
+    //       Row(
+    //         children: [
+    //           TextButton(
+    //             onPressed:
+    //                 () => Navigator.push(
+    //                   context,
+    //                   MaterialPageRoute(
+    //                     builder: (context) => const LoginScreen(),
+    //                   ),
+    //                 ),
+    //             child: const Text('Login'),
+    //           ),
+    //           const SizedBox(width: 8),
+    //           ElevatedButton(
+    //             onPressed:
+    //                 () => Navigator.push(
+    //                   context,
+    //                   MaterialPageRoute(
+    //                     builder: (context) => const LoginScreen(),
+    //                   ),
+    //                 ),
+    //             style: ElevatedButton.styleFrom(
+    //               backgroundColor: Colors.blue,
+    //               foregroundColor: Colors.white,
+    //               shape: RoundedRectangleBorder(
+    //                 borderRadius: BorderRadius.circular(8),
+    //               ),
+    //             ),
+    //             child: const Text('Sign Up'),
+    //           ),
+    //         ],
+    //       ),
+    //     ],
+    //   ),
+    // );
+    return StreamBuilder<User?>(
+      stream: AuthService().authStateChanges,
+      builder: (context, snapshot) {
+        final user = snapshot.data;
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.1),
+                spreadRadius: 2,
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            'MotelReserve',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.blue,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'MotelReserve',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue,
+                ),
+              ),
+              Row(
+                children: [
+                  _navItem('Home', context),
+                  _navItem('Rooms', context),
+                  _navItem('About', context),
+                  _navItem('Contact', context),
+                ],
+              ),
+              user != null
+                  ? _buildUserProfile(context, user)
+                  : _buildAuthButtons(context),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAuthButtons(BuildContext context) {
+    return Row(
+      children: [
+        TextButton(
+          onPressed:
+              () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+              ),
+          child: const Text('Login'),
+        ),
+        const SizedBox(width: 8),
+        ElevatedButton(
+          onPressed:
+              () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const RegisterScreen()),
+              ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
             ),
           ),
-          Row(
+          child: const Text('Sign Up'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildUserProfile(BuildContext context, User user) {
+    return FutureBuilder<DocumentSnapshot>(
+      future:
+          FirebaseFirestore.instance.collection('users').doc(user.uid).get(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        }
+
+        if (snapshot.hasError) {
+          return const Icon(Icons.error);
+        }
+
+        final userData = snapshot.data!.data() as Map<String, dynamic>? ?? {};
+
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => UserProfileScreen()),
+            );
+          },
+          child: Row(
             children: [
-              _navItem('Home', context),
-              _navItem('Rooms', context),
-              _navItem('About', context),
-              _navItem('Contact', context),
-            ],
-          ),
-          Row(
-            children: [
-              TextButton(
-                onPressed:
-                    () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const LoginScreen(),
-                      ),
-                    ),
-                child: const Text('Login'),
+              Text(
+                userData['name']?.toString() ?? 'User',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(width: 8),
-              ElevatedButton(
-                onPressed:
-                    () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const LoginScreen(),
-                      ),
-                    ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+              CircleAvatar(
+                radius: 16,
+                child: Text(
+                  userData['name'] != null &&
+                          (userData['name'] as String).isNotEmpty
+                      ? (userData['name'] as String)[0].toUpperCase()
+                      : 'U',
+                  style: const TextStyle(fontSize: 16),
                 ),
-                child: const Text('Sign Up'),
               ),
             ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -466,25 +595,28 @@ class _LandingPageState extends State<LandingPage> {
             ],
           ),
           RichText(
-  text: TextSpan(
-    style: TextStyle(color: Colors.white70),
-    children: [
-      const TextSpan(text: '© 2025 MotelReserve - '),
-      TextSpan(
-        text: 'CodeLink',
-        style: TextStyle(
-          color: Colors.blueAccent,
-          decoration: TextDecoration.underline,
-        ),
-        recognizer: TapGestureRecognizer()
-          ..onTap = () {
-            launchUrl(Uri.parse('https://codelinkinternational.com/'));
-          },
-      ),
-      const TextSpan(text: '. All rights reserved.'),
-    ],
-  ),
-),
+            text: TextSpan(
+              style: TextStyle(color: Colors.white70),
+              children: [
+                const TextSpan(text: '© 2025 MotelReserve - '),
+                TextSpan(
+                  text: 'CodeLink',
+                  style: TextStyle(
+                    color: Colors.blueAccent,
+                    decoration: TextDecoration.underline,
+                  ),
+                  recognizer:
+                      TapGestureRecognizer()
+                        ..onTap = () {
+                          launchUrl(
+                            Uri.parse('https://codelinkinternational.com/'),
+                          );
+                        },
+                ),
+                const TextSpan(text: '. All rights reserved.'),
+              ],
+            ),
+          ),
         ],
       ),
     );

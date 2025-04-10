@@ -100,19 +100,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 16),
               const Text(
                 'Welcome to Motel Reservation',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
               Text(
                 'Create an account to book your stay',
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 16,
-                ),
+                style: TextStyle(color: Colors.grey[600], fontSize: 16),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
@@ -193,7 +187,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   onPressed: () {
                     setState(
-                        () => _obscureConfirmPassword = !_obscureConfirmPassword);
+                      () => _obscureConfirmPassword = !_obscureConfirmPassword,
+                    );
                   },
                 ),
               ),
@@ -213,12 +208,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 height: 50,
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _register,
-                  child: _isLoading
-                      ? const CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        )
-                      : const Text('Create Account'),
+                  child:
+                      _isLoading
+                          ? const CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          )
+                          : const Text('Create Account'),
                 ),
               ),
               const SizedBox(height: 24),

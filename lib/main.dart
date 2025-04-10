@@ -7,6 +7,7 @@ import 'package:my_app/screens/admin/admin_home.dart';
 import 'package:my_app/screens/auth/email_verification_screen.dart';
 import 'package:my_app/screens/auth/login_screen.dart';
 import 'package:my_app/screens/user/home_screen.dart';
+import 'package:my_app/screens/user/profile_screen.dart';
 import 'firebase_options.dart';
 import 'package:my_app/screens/home/landing_page.dart';
 
@@ -45,6 +46,7 @@ class MyApp extends StatelessWidget {
         '/adminDashboard': (context) => const AdminHome(),
         '/userDashboard': (context) => const UserHomeScreen(),
         '/home': (context) => const LandingPage(),
+        '/profile': (context) => UserProfileScreen(),
       },
     );
   }
