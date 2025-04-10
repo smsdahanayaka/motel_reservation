@@ -26,7 +26,7 @@ class AuthService {
         throw 'User data not found.';
       }
 
-      return {'user': credential.user, 'role': userData['role']};
+      return {'user': credential.user, 'role': userData['isAdmin']};
     } on FirebaseAuthException catch (e) {
       throw _handleAuthError(e);
     }

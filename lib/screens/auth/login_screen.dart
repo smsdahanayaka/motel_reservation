@@ -33,8 +33,8 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text.trim(),
       );
       final role = result['role'];
-
-      if (role == 'admin') {
+      
+      if (role == true) {
         Navigator.pushReplacementNamed(context, '/adminDashboard');
       } else {
         Navigator.pushReplacementNamed(context, '/home');
