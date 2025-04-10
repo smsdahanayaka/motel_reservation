@@ -17,13 +17,13 @@ A complete **Flutter Web** application for motel reservation with Firebase integ
 ## 🛠️ Setup Guide
 
 ### ✅ Step 1: Clone the Project
-git clone https://github.com/smsdahanayaka/motel_reservation.git
+- git clone https://github.com/smsdahanayaka/motel_reservation.git
 
 
 ### ✅ Step 2: Install Flutter SDK
-#### Download and extract Flutter
-#### Add Flutter to your PATH
-#### Verify installation
+- Download and extract Flutter
+- Add Flutter to your PATH
+- Verify installation
 
 flutter doctor
 
@@ -39,6 +39,9 @@ flutter doctor
 
 ### ✅ Step 5: Install Tools
 
+bash
+Copy
+Edit
 npm install -g firebase-tools
 firebase login
 dart pub global activate flutterfire_cli
