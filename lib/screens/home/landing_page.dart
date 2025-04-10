@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:my_app/screens/auth/login_screen.dart';
 import 'package:my_app/screens/user/booking_screen.dart';
 import 'package:my_app/widgets/availability_calendar.dart';
+import 'package:flutter/gestures.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LandingPage extends StatefulWidget {
   const LandingPage({super.key});
@@ -463,11 +465,26 @@ class _LandingPageState extends State<LandingPage> {
               _footerColumn('Social', ['Facebook', 'Twitter', 'Instagram']),
             ],
           ),
-          const SizedBox(height: 40),
-          const Text(
-            '© 2023 MotelReserve. All rights reserved.',
-            style: TextStyle(color: Colors.white70),
-          ),
+          RichText(
+  text: TextSpan(
+    style: TextStyle(color: Colors.white70),
+    children: [
+      const TextSpan(text: '© 2025 MotelReserve - '),
+      TextSpan(
+        text: 'CodeLink',
+        style: TextStyle(
+          color: Colors.blueAccent,
+          decoration: TextDecoration.underline,
+        ),
+        recognizer: TapGestureRecognizer()
+          ..onTap = () {
+            launchUrl(Uri.parse('https://codelinkinternational.com/'));
+          },
+      ),
+      const TextSpan(text: '. All rights reserved.'),
+    ],
+  ),
+),
         ],
       ),
     );
