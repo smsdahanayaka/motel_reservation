@@ -52,6 +52,35 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     };
   }
 
+  Future<void> _deleteAccount() async {
+    setState(() => _isLoading = true);
+    try {
+      final current_user = _auth.currentUser;
+      if (current_user == null) throw Exception('user not login');
+
+      await _firestore.collection('users').doc(current_user.uid).delete();
+
+      await current_user.delete();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Profile deleted successfully.')),
+        );
+      }
+
+      // Navigate to login or welcome screen if needed
+      Navigator.of(context).pushReplacementNamed('/login');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Delete account failed: ${e.toString()}')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   Future<void> _logout() async {
     setState(() => _isLoading = true);
     try {
@@ -299,6 +328,43 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 const Divider(),
                 const SizedBox(height: 10),
 
+                _buildSettingTile(
+                  Icons.delete,
+                  'Delete Account',
+                  color: Colors.red,
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder:
+                          (ctx) => AlertDialog(
+                            title: Text('Confirm Deletion'),
+                            content: Text(
+                              'Are you sure you want to delete your account? This action cannot be undone.',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed:
+                                    () =>
+                                        Navigator.of(ctx).pop(), // Close dialog
+                                child: Text('Cancel'),
+                              ),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                ),
+                                onPressed: () {
+                                  Navigator.of(ctx).pop(); // Close dialog first
+                                  _deleteAccount(); // Then call the delete method
+                                },
+                                child: Text('Delete'),
+                              ),
+                            ],
+                          ),
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 10),
                 _buildSettingTile(
                   Icons.logout,
                   'Logout',
