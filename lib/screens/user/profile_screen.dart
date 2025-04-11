@@ -239,6 +239,294 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
+  Widget _buildBookingHistoryForm(Map<String, dynamic> userData) {
+    return StreamBuilder<QuerySnapshot>(
+      stream:
+          _firestore
+              .collection('bookings')
+              .where('userId', isEqualTo: _auth.currentUser?.uid)
+              .orderBy('createdAt', descending: true)
+              .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(child: Text('No bookings found'));
+        }
+
+        final bookings = snapshot.data!.docs;
+
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: bookings.length,
+          itemBuilder: (context, index) {
+            final booking = bookings[index];
+            final data = booking.data() as Map<String, dynamic>;
+            final checkIn = data['checkIn']?.toDate() ?? DateTime.now();
+            final checkOut = data['checkOut']?.toDate() ?? DateTime.now();
+            final createdAt = data['createdAt']?.toDate() ?? DateTime.now();
+
+            return Card(
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              child: ListTile(
+                title: Text(data['roomType'] ?? 'No Room Type'),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${DateFormat('dd MMM yyyy').format(checkIn)} - ${DateFormat('dd MMM yyyy').format(checkOut)}',
+                    ),
+                    Text('Status: ${data['status'] ?? 'Unknown'}'),
+                    Text(
+                      'Total: \$${data['totalPrice']?.toStringAsFixed(2) ?? '0.00'}',
+                    ),
+                  ],
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => _showBookingDetails(context, booking.id, data),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showBookingDetails(
+    BuildContext context,
+    String bookingId,
+    Map<String, dynamic> bookingData,
+  ) {
+    final checkIn = bookingData['checkIn']?.toDate() ?? DateTime.now();
+    final checkOut = bookingData['checkOut']?.toDate() ?? DateTime.now();
+    final createdAt = bookingData['createdAt']?.toDate() ?? DateTime.now();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder:
+          (context) => Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      bookingData['roomType'] ?? 'No Room Type',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+                const Divider(),
+                _buildDetailRow(
+                  'Check-in',
+                  DateFormat('dd MMM yyyy - hh:mm a').format(checkIn),
+                ),
+                _buildDetailRow(
+                  'Check-out',
+                  DateFormat('dd MMM yyyy - hh:mm a').format(checkOut),
+                ),
+                _buildDetailRow('Status', bookingData['status'] ?? 'Unknown'),
+                _buildDetailRow(
+                  'Total Price',
+                  '\$${bookingData['totalPrice']?.toStringAsFixed(2) ?? '0.00'}',
+                ),
+                _buildDetailRow(
+                  'Booked on',
+                  DateFormat('dd MMM yyyy - hh:mm a').format(createdAt),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    if (bookingData['status'] == 'Pending' ||
+                        bookingData['status'] == 'Approved')
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                        ),
+                        onPressed:
+                            () => _editBooking(context, bookingId, bookingData),
+                        child: const Text('Edit'),
+                      ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                      ),
+                      onPressed: () => _deleteBooking(context, bookingId),
+                      child: const Text('Cancel'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Text('$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(value),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _editBooking(
+    BuildContext context,
+    String bookingId,
+    Map<String, dynamic> bookingData,
+  ) async {
+    // Implement your edit booking logic here
+    // You might want to navigate to a new screen or show a dialog for editing
+    Navigator.pop(context); // Close the bottom sheet first
+
+    // Example: Show a dialog with editable fields
+    final roomTypeController = TextEditingController(
+      text: bookingData['roomType'],
+    );
+    final checkInController = TextEditingController(
+      text: DateFormat(
+        'yyyy-MM-dd',
+      ).format(bookingData['checkIn']?.toDate() ?? DateTime.now()),
+    );
+    final checkOutController = TextEditingController(
+      text: DateFormat(
+        'yyyy-MM-dd',
+      ).format(bookingData['checkOut']?.toDate() ?? DateTime.now()),
+    );
+
+    await showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Edit Booking'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: roomTypeController,
+                  decoration: const InputDecoration(labelText: 'Room Type'),
+                ),
+                TextField(
+                  controller: checkInController,
+                  decoration: const InputDecoration(
+                    labelText: 'Check-in Date (YYYY-MM-DD)',
+                  ),
+                ),
+                TextField(
+                  controller: checkOutController,
+                  decoration: const InputDecoration(
+                    labelText: 'Check-out Date (YYYY-MM-DD)',
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  try {
+                    await _firestore
+                        .collection('bookings')
+                        .doc(bookingId)
+                        .update({
+                          'roomType': roomTypeController.text,
+                          'checkIn': DateTime.parse(checkInController.text),
+                          'checkOut': DateTime.parse(checkOutController.text),
+                          'updatedAt': DateTime.now(),
+                        });
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Booking updated successfully'),
+                        ),
+                      );
+                      Navigator.pop(context);
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error updating booking: $e')),
+                      );
+                    }
+                  }
+                },
+                child: const Text('Save'),
+              ),
+            ],
+          ),
+    );
+  }
+
+  Future<void> _deleteBooking(BuildContext context, String bookingId) async {
+    Navigator.pop(context); // Close the bottom sheet first
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Confirm Cancellation'),
+            content: const Text(
+              'Are you sure you want to cancel this booking?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('No'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Yes, Cancel'),
+              ),
+            ],
+          ),
+    );
+
+    if (confirm == true) {
+      try {
+        await _firestore.collection('bookings').doc(bookingId).delete();
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Booking cancelled successfully')),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error cancelling booking: $e')),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -300,7 +588,30 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   Icons.history,
                   'Booking History',
                   onTap: () {
-                    // Navigate to booking history
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      builder:
+                          (context) => Container(
+                            padding: const EdgeInsets.all(16),
+                            height: MediaQuery.of(context).size.height * 0.8,
+                            child: Column(
+                              children: [
+                                const Text(
+                                  'Your Bookings',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const Divider(),
+                                Expanded(
+                                  child: _buildBookingHistoryForm(userData),
+                                ),
+                              ],
+                            ),
+                          ),
+                    );
                   },
                 ),
                 _buildSettingTile(
