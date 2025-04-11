@@ -113,3 +113,11 @@ motel_reservation/
 ![edit user](image-9.png)
 
 ![delete user](image-10.png)
+
+![view bookings](image-11.png)
+
+![view bookings 2](image-12.png)
+
+![edit booking](image-13.png)
+
+![cancel bookings](image-14.png)
