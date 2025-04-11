@@ -121,3 +121,5 @@ motel_reservation/
 ![edit booking](image-13.png)
 
 ![cancel bookings](image-14.png)
+
+![admin dashboard](image-15.png)
