@@ -33,11 +33,12 @@ class _AvailabilityCalendarState extends State<AvailabilityCalendar> {
   Future<void> _loadBookedDates() async {
     try {
       final now = DateTime.now();
-      final bookings = await FirebaseFirestore.instance
-          .collection('bookings')
-          .where('roomType', isEqualTo: widget.roomType)
-          .where('status', isEqualTo: 'Approved')
-          .get();
+      final bookings =
+          await FirebaseFirestore.instance
+              .collection('bookings')
+              .where('roomType', isEqualTo: widget.roomType)
+              .where('status', isEqualTo: 'Approved')
+              .get();
 
       Set<DateTime> bookedDates = {};
 
@@ -45,10 +46,10 @@ class _AvailabilityCalendarState extends State<AvailabilityCalendar> {
         final data = doc.data();
         final checkIn = (data['checkIn'] as Timestamp).toDate();
         final checkOut = (data['checkOut'] as Timestamp).toDate();
-          print("Booking Document ID: ${doc.id}");
-          print("Room Type: ${data['roomType']}");
-          print("Check-in: $checkIn");
-          print("Check-out: $checkOut");
+        print("Booking Document ID: ${doc.id}");
+        print("Room Type: ${data['roomType']}");
+        print("Check-in: $checkIn");
+        print("Check-out: $checkOut");
         // Add all dates between checkIn and checkOut (inclusive)
         DateTime current = DateTime(checkIn.year, checkIn.month, checkIn.day);
         final endDate = DateTime(checkOut.year, checkOut.month, checkOut.day);
@@ -65,9 +66,9 @@ class _AvailabilityCalendarState extends State<AvailabilityCalendar> {
       });
     } catch (e) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading bookings: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error loading bookings: $e')));
     }
   }
 
@@ -77,9 +78,9 @@ class _AvailabilityCalendarState extends State<AvailabilityCalendar> {
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
     if (_isDateBooked(selectedDay)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('This date is already booked')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('This date is already booked')));
       return;
     }
 
@@ -119,82 +120,82 @@ class _AvailabilityCalendarState extends State<AvailabilityCalendar> {
             _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : TableCalendar(
-                    firstDay: DateTime.now(),
-                    lastDay: DateTime.now().add(const Duration(days: 365)),
-                    focusedDay: _focusedDay,
-                    selectedDayPredicate: (day) {
-                      return isSameDay(_selectedStartDate, day) ||
-                          (_selectedEndDate != null &&
-                              (day.isAfter(_selectedStartDate!) &&
-                                  day.isBefore(_selectedEndDate!))) ||
-                          isSameDay(_selectedEndDate, day);
-                    },
-                    onDaySelected: _onDaySelected,
-                    calendarStyle: CalendarStyle(
-                      disabledTextStyle: const TextStyle(color: Colors.grey),
-                      todayDecoration: BoxDecoration(
-                        color: Colors.blue.shade100,
-                        shape: BoxShape.circle,
-                      ),
-                      selectedDecoration: const BoxDecoration(
-                        color: Colors.blue,
-                        shape: BoxShape.circle,
-                      ),
-                      rangeStartDecoration: const BoxDecoration(
-                        color: Colors.blue,
-                        shape: BoxShape.circle,
-                      ),
-                      rangeEndDecoration: const BoxDecoration(
-                        color: Colors.blue,
-                        shape: BoxShape.circle,
-                      ),
-                      rangeHighlightColor: Colors.blue.withOpacity(0.2),
-                      outsideDaysVisible: false,
+                  firstDay: DateTime.now(),
+                  lastDay: DateTime.now().add(const Duration(days: 365)),
+                  focusedDay: _focusedDay,
+                  selectedDayPredicate: (day) {
+                    return isSameDay(_selectedStartDate, day) ||
+                        (_selectedEndDate != null &&
+                            (day.isAfter(_selectedStartDate!) &&
+                                day.isBefore(_selectedEndDate!))) ||
+                        isSameDay(_selectedEndDate, day);
+                  },
+                  onDaySelected: _onDaySelected,
+                  calendarStyle: CalendarStyle(
+                    disabledTextStyle: const TextStyle(color: Colors.grey),
+                    todayDecoration: BoxDecoration(
+                      color: Colors.blue.shade100,
+                      shape: BoxShape.circle,
                     ),
-                    calendarBuilders: CalendarBuilders(
-                      defaultBuilder: (context, day, focusedDay) {
-                        if (_isDateBooked(day)) {
-                          return Center(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.red.withOpacity(0.5),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Center(
-                                child: Text(
-                                  '${day.day}',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    decoration: TextDecoration.lineThrough,
-                                  ),
+                    selectedDecoration: const BoxDecoration(
+                      color: Colors.blue,
+                      shape: BoxShape.circle,
+                    ),
+                    rangeStartDecoration: const BoxDecoration(
+                      color: Colors.blue,
+                      shape: BoxShape.circle,
+                    ),
+                    rangeEndDecoration: const BoxDecoration(
+                      color: Colors.blue,
+                      shape: BoxShape.circle,
+                    ),
+                    rangeHighlightColor: Colors.blue.withOpacity(0.2),
+                    outsideDaysVisible: false,
+                  ),
+                  calendarBuilders: CalendarBuilders(
+                    defaultBuilder: (context, day, focusedDay) {
+                      if (_isDateBooked(day)) {
+                        return Center(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.red.withOpacity(0.5),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: Text(
+                                '${day.day}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  decoration: TextDecoration.lineThrough,
                                 ),
                               ),
                             ),
-                          );
-                        }
-                        return null;
-                      },
-                      disabledBuilder: (context, day, focusedDay) {
-                        return Center(
-                          child: Text(
-                            '${day.day}',
-                            style: const TextStyle(color: Colors.grey),
                           ),
                         );
-                      },
-                    ),
-                    enabledDayPredicate: (day) {
-                      // Disable past dates and booked dates
-                      return day.isAfter(
-                            DateTime.now().subtract(const Duration(days: 1)),
-                          ) &&
-                          !_isDateBooked(day);
+                      }
+                      return null;
                     },
-                    rangeSelectionMode:
-                        _selectedStartDate != null && _selectedEndDate == null
-                            ? RangeSelectionMode.toggledOn
-                            : RangeSelectionMode.toggledOff,
+                    disabledBuilder: (context, day, focusedDay) {
+                      return Center(
+                        child: Text(
+                          '${day.day}',
+                          style: const TextStyle(color: Colors.grey),
+                        ),
+                      );
+                    },
                   ),
+                  enabledDayPredicate: (day) {
+                    // Disable past dates and booked dates
+                    return day.isAfter(
+                          DateTime.now().subtract(const Duration(days: 1)),
+                        ) &&
+                        !_isDateBooked(day);
+                  },
+                  rangeSelectionMode:
+                      _selectedStartDate != null && _selectedEndDate == null
+                          ? RangeSelectionMode.toggledOn
+                          : RangeSelectionMode.toggledOff,
+                ),
             const SizedBox(height: 16),
             const Row(
               mainAxisAlignment: MainAxisAlignment.center,

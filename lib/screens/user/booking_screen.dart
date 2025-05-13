@@ -25,6 +25,7 @@ class _BookingScreenState extends State<BookingScreen> {
   DateTime? _checkInDate;
   DateTime? _checkOutDate;
   bool _isLoading = false;
+  String? _selectedRoom;
   final Map<String, List<double>> _pricing = {
     'Standard Room': [17.0, 30.0, 45.0, 100.0],
     'Penthouse Suite': [65.0, 100.0, 135.0, 220.0, 750.0],
@@ -73,6 +74,7 @@ class _BookingScreenState extends State<BookingScreen> {
         checkIn: _checkInDate!,
         checkOut: _checkOutDate!,
         totalPrice: _totalPrice,
+        roomNumber: _selectedRoom ?? '',
       );
 
       if (mounted) {
@@ -125,6 +127,45 @@ class _BookingScreenState extends State<BookingScreen> {
               ),
             ),
             const SizedBox(height: 24),
+
+            // Add Room Dropdown for Standard Room
+            if (widget.roomType == 'Standard Room') ...[
+              const Text(
+                'Select Room',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<String>(
+                value: _selectedRoom,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                ),
+                items:
+                    [
+                      'Room 1',
+                      'Room 2',
+                      'Room 3',
+                    ].map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedRoom = newValue;
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+            ],
+
             DateSelector(
               label: 'Check-in Date',
               selectedDate: _checkInDate,

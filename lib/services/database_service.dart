@@ -43,6 +43,7 @@ class DatabaseService {
     required DateTime checkIn,
     required DateTime checkOut,
     required double totalPrice,
+    required String roomNumber,
   }) async {
     final user = _auth.currentUser;
     if (user == null) throw Exception('User not authenticated');
@@ -50,6 +51,7 @@ class DatabaseService {
     await _bookingsCollection.add({
       'userId': user.uid,
       'userEmail': user.email,
+      'roomNumber': roomNumber,
       'roomType': roomType,
       'checkIn': Timestamp.fromDate(checkIn),
       'checkOut': Timestamp.fromDate(checkOut),
