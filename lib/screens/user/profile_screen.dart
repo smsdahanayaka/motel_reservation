@@ -284,6 +284,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       '${DateFormat('dd MMM yyyy').format(checkIn)} - ${DateFormat('dd MMM yyyy').format(checkOut)}',
                     ),
                     Text('Status: ${data['status'] ?? 'Unknown'}'),
+                    Text('Room number: ${data['roomNumber'] ?? '-'}'),
                     Text(
                       'Total: \$${data['totalPrice']?.toStringAsFixed(2) ?? '0.00'}',
                     ),
@@ -344,6 +345,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   DateFormat('dd MMM yyyy - hh:mm a').format(checkOut),
                 ),
                 _buildDetailRow('Status', bookingData['status'] ?? 'Unknown'),
+                _buildDetailRow('RoomNumber', bookingData['roomNumber'] ?? '-'),
                 _buildDetailRow(
                   'Total Price',
                   '\$${bookingData['totalPrice']?.toStringAsFixed(2) ?? '0.00'}',
